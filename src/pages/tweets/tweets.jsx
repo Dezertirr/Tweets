@@ -5,32 +5,39 @@ export function Tweets() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetchUsers()
-      .then(data => setUsers(data))
-      .catch(error => console.error(error));
+    const storedUsers = localStorage.getItem('users');
+    if (storedUsers) {
+      setUsers(JSON.parse(storedUsers));
+    } else {
+      fetchUsers()
+        .then(data => setUsers(data))
+        .catch(error => console.error(error));
+    }
   }, []);
 
   const handleFollow = (userId) => {
-    const updatedUsers = users.map(user => {
-      if (user.id === userId) {
-        if (user.isFollowing) {
-          return {
-            ...user,
-            followers: user.followers - 1,
-            isFollowing: false
-          };
-        } else {
-          return {
-            ...user,
-            followers: user.followers + 1,
-            isFollowing: true
-          };
+    setUsers(prevUsers => {
+      const updatedUsers = prevUsers.map(user => {
+        if (user.id === userId) {
+          if (user.isFollowing) {
+            return {
+              ...user,
+              followers: user.followers - 1,
+              isFollowing: false
+            };
+          } else {
+            return {
+              ...user,
+              followers: user.followers + 1,
+              isFollowing: true
+            };
+          }
         }
-      }
-      return user;
+        return user;
+      });
+      localStorage.setItem('users', JSON.stringify(updatedUsers));
+      return updatedUsers;
     });
-
-    setUsers(updatedUsers);
   };
 
   return (
